@@ -1,0 +1,180 @@
+1) Write to an address :
+
+.. Addr is stored in stack
+..so some pop into reg    -  0x080b8376 : pop eax ; ret ,,,,,  0x080481c9 : pop ebx ; ret ,,,,  0x080483ca : pop ebp ; ret  ,,,, 0x080dec61 : pop ecx ; ret ,,,  0x08048480 : pop edi ; ret 
+                             0x0805bf42 : pop edx ; ret
+
+..then store into *()   -  0x08065a43 : mov word ptr [edx], ax ; mov eax, edx ; ret -- use this to write word by word   
+
+                         0x08054bfb : mov dword ptr [edx], eax ; ret -- use for others  (  *(edx) = eax  )
+
+
+
+2) Read from address - 
+
+
+# 3) Subtract one  --   0x080545ba : sub eax, 1 ; pop ebx ; ret
+
+0x08063258 : imul dword ptr [ecx] ; rcr byte ptr [edi + 0x5e], 1 ; pop ebx ; ret
+4) Multiply : imul dword ptr [ecx] ; rcr byte ptr [edi + 0x5e], 1 ; pop ebx ; ret
+
+5) 0x08065a34 : mov eax, edx ; ret
+   0x0808be54 : mov dword ptr [ebx], ecx ; xor eax, eax ; add esp, 4 ; pop ebx ; pop esi ; ret
+
+
+Store and return :
+0x0805cacd : mov edi, eax ; mov esi, edx ; mov eax, dword ptr [esp + 4] ; ret
+0x08065854 : mov eax, edi ; pop edi ; ret
+
+
+0x080d64bb : push eax ; pop ebx ; or cl, byte ptr [esi] ; adc al, 0x41 ; ret
+0x0804f44a : mov eax, ebx ; pop ebx ; ret
+
+Code : 
+-> Let &glb = addr
+-> glb = 6;
+
+
+-> let &var_a = *(ecx)
+
+-> instr like   eax*=var_a
+
+ 
+-> glb = eax
+
+
+Overall :
+
+(addr on TOS)
+pop ecx;ret  // ecx = &glb
+(5 on TOS)    
+pop eax;ret   // eax = 5
+(addr on TOS)
+pop edx;ret   // edx = &glb
+mov dword ptr [edx], eax ; ret   glb = 5 
+(6 on TOS)
+pop eax;ret    eax = 6
+#add a push statment here 
+imul dword ptr [ecx] ; rcr byte ptr [edi + 0x5e], 1 ; pop ebx ; ret   eax = 30
+push eax ; pop ebx ; or cl, byte ptr [esi] ; adc al, 0x41 ; ret ebx = 30
+(addr on TOS)
+pop ecx;ret #ecx = &glb
+(4 on TOS)
+pop eax;ret # eax= 4
+(addr on TOS) 
+pop edx;ret #edx = &glb 
+mov dword ptr [edx], eax ; ret #glb = 4
+// add a push statement here 
+mov eax, ebx ; pop ebx ; ret  #eax = 30
+// push here
+imul dword ptr [ecx] ; rcr byte ptr [edi + 0x5e], 1 ; pop ebx ; ret #eax = 120
+push eax ; pop ebx ; or cl, byte ptr [esi] ; adc al, 0x41 ; ret #ebx = 120
+(addr on TOS)
+pop ecx;ret  #ecx = &glb
+(3 on TOS)
+pop eax;ret  eax = 3
+(addr on TOS) 
+pop edx;ret  edx = &glb
+mov dword ptr [edx], eax ; ret glb = 3
+//push some value
+mov eax, ebx ; pop ebx ; ret eax = 120 
+
+//push some value
+imul dword ptr [ecx] ; rcr byte ptr [edi + 0x5e], 1 ; pop ebx ; ret eax = 360 
+push eax ; pop ebx ; or cl, byte ptr [esi] ; adc al, 0x41 ; ret  ebx = 360
+(addr on TOS)
+pop ecx;ret ecx = &glb
+(2 on TOS)
+pop eax;ret  eax = 2
+(addr on TOS)
+pop edx;ret  edx = &glb
+mov dword ptr [edx], eax ; ret glb = 2
+//push some value
+mov eax, ebx ; pop ebx ; ret eax = 360
+//push some value
+imul dword ptr [ecx] ; rcr byte ptr [edi + 0x5e], 1 ; pop ebx ; ret eax= 720
+(addr on TOS) 
+pop edx;ret edx = glb
+mov dword ptr [edx], eax ; ret glb = 720
+(The printf in main's addr on TOS)
+
+
+
+$1 = (<data variable, no debug info> *) 0x80eba20 <glb>
+
+0x80ea068   rollnumber1
+0x80ea078   rollnumber2
+
+
+0x80ea06a
+pop edx;ret
+
+// 1 is 0x31 8 0x38
+0x3831
+pop eax;ret
+
+mov word ptr [edx], ax ; mov eax, edx ; ret
+
+0x80ea06c
+pop edx;ret
+
+// B is 0x42  0 is 0x30
+
+0x3042
+pop eax;ret
+
+mov word ptr [edx], ax ; mov eax, edx ; ret
+
+0x80ea06e
+pop edx;ret
+
+// 5 is 0x35  6 is 0x36
+
+0x3635
+pop eax;ret
+
+mov word ptr [edx], ax ; mov eax, edx ; ret
+
+// for rollnumber 2
+# 0x80ea078   rollnumber2
+
+0x80ea07a
+pop edx;ret
+
+// 1 is 0x31 8 0x38
+0x3831
+pop eax;ret
+
+mov word ptr [edx], ax ; mov eax, edx ; ret
+
+0x80ea07c
+pop edx;ret
+
+// B is 0x42  0 is 0x30
+
+0x3042
+pop eax;ret
+
+mov word ptr [edx], ax ; mov eax, edx ; ret
+
+0x80ea07e
+pop edx;ret
+
+// B is 0x33  0 is 0x32
+
+0x3233
+pop eax;ret
+
+mov word ptr [edx], ax ; mov eax, edx ; ret
+
+ra is at 0xffffcb0c 
+
+
+
+
+
+
+
+
+
+ 
